@@ -7,17 +7,15 @@
 
 int main(int argc,char const *argv[])
 {
-    const char* filename;
-    strcpy(filename,*argv[1]);
-    FILE *in_file = fopen(filename, "r");
-
-    struct stat sb;
-
-
-    char *file_contents = malloc(sb.st_size);
-
-    while (fscanf(in_file, "%[^\n] ", file_contents) != EOF) {
-        printf("%s\n", file_contents);
+    FILE *in_file;
+    char filename[50];
+    char product[50];
+    double price;
+    strcpy(filename,argv[1]);
+    in_file = fopen(filename, "r");
+    fscanf(in_file,"%*s");
+    while (fscanf(in_file, "%*s %s", product) != EOF) {
+        printf("%s\n", product);
     }
 
     fclose(in_file);
