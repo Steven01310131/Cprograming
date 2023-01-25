@@ -81,51 +81,60 @@ void delete(node_t* head,int index){
 
 
 int main(){
+    node_t * head = NULL;                     // initializing the linked list
+    head = (node_t *) malloc(sizeof(node_t));//allocating memory for the header of the linked list
+    int index;
+    double min,max;
+    char command;
+    if (head == NULL) {
+        return 1;
+    }
 
-int index;
-float min,max;
-node_t * head = NULL;                     // initializing the linked list
-head = (node_t *) malloc(sizeof(node_t));//allocating memory for the header of the linked list
-if (head == NULL) {
-    return 1;
-}
+    while (1)
+    {
+        printf(" Enter command: ");
+        scanf(" %c", &command);
+        switch (command)
+        {
+        case 'A':
+        {
 
-char command;
-    while(1){
-        printf("Enter command: ");
-        scanf(" %c",&command);
-        if(command=='A'){
-            scanf("%d %f %f",&index,&min,&max);
-            if(min>max){
-                printf("Wrong temparature input\n");
-                continue;
+            scanf(" %d %lf %lf", &index, &min, &max);
+            if (index < 1 || index > 31)         // checking for the index to match the days of january
+            {
+                printf(" Invalid index! \r \n");
+                break;
             }
-
-            else{
-                node_t* new=newNode(index,min,max);
-                insert(head,new);
-            }
-        }
-            
-        
-        else if(command=='D'){
-            scanf("%d",&index);
-            delete(head,index);
-        }
-        else if (command=='P'){
-            printList(head);
-            continue;
-        }
-        else if(command=='Q'){
+            node_t* new=newNode(index,min,max);
+            insert(head,new);
             break;
         }
+        case 'D':
+        {
+            scanf("%d",&index);
+            if (index < 1 || index > 31)// checking for the index to match the days of january
+            {
+                printf(" Invalid index! \r \n");
+                break;
+            }
+            delete(head,index);
+            break;
+        }
+        case 'P':
+        {
+            printList(head);
+            break;
+        }
+        case 'Q':
+        {
+            return 0;
+        }
+        default:
+        {
+            printf(" Invalid command! \r \n");
+            break;
+        }
+        }
     }
-    
-
-
-
-printf("done\n");
-
-
 
 }
