@@ -11,18 +11,26 @@
 
 int main(){
     FILE *file;
-
+//     typedef struct values {
+//         int int_num;
+//         double db_num;
+//         char character;
+//         float fl_num;
+// } values;
         int int_num;
         double db_num;
         char character;
         float fl_num;
 
-
-    printf("%ld\n",sizeof(char));
+    // values values_read;
+    //  printf("%ld\n",sizeof(values_read));
     // values=malloc(sizeof(data));
     // values=(data_t*)malloc(sizeof(data_t));
  
     file=fopen("little_bin_file","r");
+    // fread(&values_read,sizeof(values_read),1,file);
+    // printf("int number is %d\n", values_read.int_num);
+    // printf("float number is %f\n", values_read.db_num);
     fread(&int_num,sizeof(int),1,file);
     fread(&db_num,sizeof(double),1,file);
     fread(&character,sizeof(char),1,file);
