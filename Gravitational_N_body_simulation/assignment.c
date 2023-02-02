@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#include <string.h>
 typedef struct{
     double rx,ry;
 
@@ -12,24 +13,34 @@ typedef struct star {
     double vx,vy; // velocity
     double m; //mass
     double Fx,Fy; //total force exertion
-
+     double brightness; 
 } star ;
 
 int main(int argc, char *argv[]) {
-    int N=atoi(argv[1]); //Number of stars to simulate
-    int nsteps=atoi(argv[2]); // number of steps 
-    const float epsilon=0.001; // force modification
-    const float delta_t=0.00001;//timestep
-    const double G=100/N; //Gravitational constant 
-    double r,rx,ry; //registers to caclulate the the distance vectors
-    star* stars;
-    stars=(struct star*) malloc(N * sizeof(struct star));
+    int N=atoi(argv[1]);                //Number of stars to simulate
+    char *fileName = strdup( argv[2] ); //filename 
+    int nsteps=atoi(argv[3]);           // number of steps
+    double const delta_t=atoi(argv[4]); //timestep
+    const float epsilon=0.001;          // force modification
+    const double G=100/N;               //Gravitational constant 
+    double r,rx,ry;                     //registers to caclulate the the distance vectors
+    
+    
+    struct star stars[N];
+    // struct star *stars = (struct star*)malloc(N * sizeof(star));      THIS DOESNT WORK WHEN I DYNAMICALLY ALLOCATE MEMORY
+    // if (stars == NULL) {
+    //     printf("Error allocating memory");
+    //     return 1;
+    // }
+    // printf("%ld\n",sizeof(star));
+    //stars=(struct star*) malloc(100000 * sizeof(struct star));
     /*for reading the initial conditions*/
     int count=0;
     FILE *fp;
-    fp = fopen("file.txt", "r");
+    fp = fopen("file.txt", "rb");
     while (count<N  ){
-        scanf(fp, "%lf%lf%lf%lf%lf", &stars[count].x, &stars[count].y,&stars)
+        fscanf(fp, "%lf%lf%lf%lf%lf%lf", &stars[count].x, &stars[count].y,&stars[count].m,
+              &stars[count].vx,&stars[count].vy,&stars[count].brightness);
     }
     fclose(fp);
 
