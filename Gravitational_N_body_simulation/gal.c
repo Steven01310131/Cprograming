@@ -39,7 +39,7 @@ void main(int argc, char const *argv[]){
 	double time;
 
     //Allocate memory	
-	particle_t  particles[N]; //Stores up to about 6500 particles in cache on my device.	
+	particle_t *particles=(struct particle_t*)malloc(N *6* sizeof(double)); //Stores up to about 6500 particles in cache on my device.	
 	//Reading inputs
 	FILE *file;
 	file=fopen(filename,"rb");
@@ -82,7 +82,7 @@ void main(int argc, char const *argv[]){
 	
 	
 	//Save into a file
-	FILE* fp = fopen("result.gal","w"); //should be result.gal 
+	FILE* fp = fopen("results.gal","w"); //should be result.gal 
 	if(fp == NULL)
     {
         printf("The file was not created.\n");
