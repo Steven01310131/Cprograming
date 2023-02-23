@@ -2,7 +2,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <sys/time.h>
-#include <pthread.h>
+#include <omp.h>
 
 // struct for data that will be on the files
 typedef struct star
@@ -15,6 +15,11 @@ typedef struct star
     double brightness;
 
 } star;
+typedef struct
+{
+    int start;
+    int end;
+} Loop_positions;
 typedef struct
 {
     double x, y;
@@ -31,20 +36,20 @@ int N;
 int nsteps;
 double delta_t;
 double G;
-star *stars; // making our array global so it can be accesed by the threads
-star_acc comp;
+star *stars;   // making our array global so it can be accesed by the threads
+star_acc comp; // making our struct of arrays global so it can be accesed by the threads
 
-void *calc_velocity()
+void *calc_velocity(void *arg)
 {
+    Loop_positions *data = (Loop_positions *)arg;
+    int start = data->start;
+    int end = data->end;
+    // printf("%d\n",start);
+    // printf("%d\n",end);
+    // printf("\n");
     double r, rx, ry; // registers to caclulate the the distance vectors
-    for (int i = 0; i < N; i++)
-    {
-        comp.x[i] = stars[i].x;
-        comp.y[i] = stars[i].y;
-        comp.m[i] = stars[i].m;
-    }
 
-    for (int i = 0; i < N; i++)
+    for (int i = start; i < end; i++)
     {
 
         vector a = {0, 0};
@@ -83,7 +88,7 @@ void positions()
 
 void main(int argc, char const *argv[])
 {
-    if (argc != 6)
+    if (argc != 7)
     {
         printf("Wrong amount of inputs\n");
         exit(EXIT_FAILURE);
@@ -93,22 +98,50 @@ void main(int argc, char const *argv[])
     nsteps = atoi(argv[3]);   // number of steps
     delta_t = atof(argv[4]);  // timestep
     int graphics = atoi(argv[5]);
-    G = 100.0 / N;       // Gravitational constant
-    pthread_t thread[4]; // number of threads
+    G = 100.0 / N;                   // Gravitational constant
+    int num_threads = atoi(argv[6]); // Number of threads
+
+    Loop_positions data[num_threads];
+    stars = (struct star *)malloc(N * 6 * sizeof(double)); // allocate memory for an array of structs
     comp.x = malloc(N * sizeof(double));
     comp.y = malloc(N * sizeof(double));
     comp.m = malloc(N * sizeof(double));
-    stars = (struct star *)malloc(N * 6 * sizeof(double)); // allocate memory for an array of structs
 
     FILE *file;                                    // File reading procedure
     file = fopen(fileName, "rb");                  // and reading the data into our array
     fread(stars, N * 6 * sizeof(double), 1, file); // of structs
     fclose(file);                                  //
 
+    // Partitioning the loop ranges based on the number of threads
+    int range = N / num_threads;
+    for (int i = 0; i < num_threads; i++)
+    {
+        data[i].start = i * range;
+        data[i].end = (1 + i) * range;
+        if (i == num_threads - 1)
+        {
+            data[i].end = N;
+        }
+        int start = data[i].start;
+        int end = data[i].end;
+        // printf("%d\n",start);
+        // printf("%d\n",end);
+        // printf("\n");
+    }
     for (int n = 0; n < nsteps; n++) // loop through all the time stepts
     {
-        calc_velocity(); // caclute the vx and vy in the current step
-        positions();     // calculate the x and y
+        for (int i = 0; i < N; i++)
+        {
+            comp.x[i] = stars[i].x;
+            comp.y[i] = stars[i].y;
+            comp.m[i] = stars[i].m;
+        }
+
+#pragma omp parallel for default(none) shared(num_threads, data)
+        for (int i = 0; i < num_threads; ++i)
+            calc_velocity(&data[i]);
+
+        positions(); // calculate the x and y
     }
     FILE *fp2 = fopen("result.gal", "w");      // Create a new result.gal file
     if (fp2 == NULL)                           // in which we will enter our data
