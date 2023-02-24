@@ -24,7 +24,13 @@ typedef struct
     double x, y;
 } vector;
 
-
+static double get_wall_seconds()
+{
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	double seconds = tv.tv_sec + (double)tv.tv_usec / 1000000;
+	return seconds;
+}
 typedef struct star_acc
 {
     double *x;
@@ -43,13 +49,7 @@ void* calc_velocity(void *arg){
     Loop_positions *data = (Loop_positions *) arg;
     int start=data->start;
     int end = data->end;
-    // printf("%d\n",start);
-    // printf("%d\n",end);
-    // printf("\n");
     double r,rx,ry;         //registers to caclulate the the distance vectors
-
-
- 
     for(int i=start;i<end;i++)
     {
 
@@ -75,11 +75,9 @@ void* calc_velocity(void *arg){
         stars[i].vx+=delta_t*a.x;
         stars[i].vy+=delta_t*a.y;
     }
-
-
 }
-void* positions(void *arg){
 
+void* positions(void *arg){
     Loop_positions *data = (Loop_positions *) arg;
     int start=data->start;
     int end = data->end;
@@ -87,8 +85,7 @@ void* positions(void *arg){
         {
             stars[i].x+=delta_t*stars[i].vx;
             stars[i].y+=delta_t*stars[i].vy;
-        }   
-    
+        }      
 }
 
 void main(int argc, char const *argv[]) {
@@ -119,6 +116,9 @@ void main(int argc, char const *argv[]) {
     
     // Partitioning the loop ranges based on the number of threads
     int range = N/ num_threads;
+
+    double time = get_wall_seconds();
+
     for( int i = 0; i < num_threads; i++ )
     {
         data[i].start=i*range;
@@ -129,9 +129,6 @@ void main(int argc, char const *argv[]) {
         }
         int start=data[i].start;
         int end = data[i].end;
-        // printf("%d\n",start);
-        // printf("%d\n",end);
-        // printf("\n");
     }
     for(int n=0;n<nsteps;n++)                    // loop through all the time stepts
     { 
@@ -140,7 +137,6 @@ void main(int argc, char const *argv[]) {
         comp.y[i]=stars[i].y;
         comp.m[i]=stars[i].m;
         }
-
         //Initialize the threads
         for( int i = 0; i < num_threads; i++ )
             pthread_create(&thread[i], NULL, calc_velocity,(void*)&data[i]);
@@ -149,15 +145,15 @@ void main(int argc, char const *argv[]) {
         for(int i=0;i<num_threads;++i)
             pthread_join(thread[i], NULL);
         
-        
+        //Initialize the threads
         for( int i = 0; i < num_threads; i++ )
             pthread_create(&thread[i], NULL, positions,(void*)&data[i]);
 
         // Wait for all threads to finish.
         for(int i=0;i<num_threads;++i)
-            pthread_join(thread[i], NULL);
-        
+            pthread_join(thread[i], NULL);        
     }
+    printf("%7.3f\n", get_wall_seconds() - time);
     FILE* fp2 = fopen( "result.gal","w");       // Create a new result.gal file  
     if(fp2 == NULL)                             // in which we will enter our data                   
     {                                           //    
