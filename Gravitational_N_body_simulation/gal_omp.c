@@ -25,6 +25,14 @@ typedef struct
     double x, y;
 } vector;
 
+static double get_wall_seconds()
+{
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    double seconds = tv.tv_sec + (double)tv.tv_usec / 1000000;
+    return seconds;
+}
+
 typedef struct star_acc
 {
     double *x;
@@ -114,6 +122,7 @@ void main(int argc, char const *argv[])
 
     // Partitioning the loop ranges based on the number of threads
     int range = N / num_threads;
+    double time = get_wall_seconds();
     for (int i = 0; i < num_threads; i++)
     {
         data[i].start = i * range;
@@ -143,6 +152,7 @@ void main(int argc, char const *argv[])
 
         positions(); // calculate the x and y
     }
+    printf("%7.3f\n", get_wall_seconds() - time);
     FILE *fp2 = fopen("result.gal", "w");      // Create a new result.gal file
     if (fp2 == NULL)                           // in which we will enter our data
     {                                          //
